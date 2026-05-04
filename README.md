@@ -82,8 +82,8 @@ No Node.js or PostgreSQL installation needed on your machine — everything runs
 
 **1. Clone the repository:**
 ```bash
-git clone https://github.com/YOUR_USERNAME/todo-app.git
-cd todo-app
+git clone https://github.com/balayantsDAVID/todo-app-infra
+cd todo-app-infra
 ```
 
 **2. Configure environment variables:**
