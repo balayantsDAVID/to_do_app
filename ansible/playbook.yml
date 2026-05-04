@@ -1,0 +1,70 @@
+---
+- name: Init the Web Application on AWS EC2
+  hosts: webserver
+  become: true
+
+  tasks:
+    - name: Update apt packages
+      apt:
+        update_cache: true
+
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-docker
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu {{
+          ansible_distribution_release }} stable
+        state: present
+
+    - name: Update apt and install docker
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+
+    - name: Install Docker Compose plugin
+      apt:
+        name: docker-compose-plugin
+        state: latest
+        update_cache: true
+
+    - name: Copy the project into Instance
+      ansible.posix.synchronize:
+        src: ../
+        dest: /home/ubuntu/TODO-APP
+        rsync_opts:
+          - "--exclude=.git"
+          - "--exclude=.DS_Store"
+          - "--exclude=backend/node_modules"
+          - "--exclude=backend/.env"
+          - "--exclude=Terraform"
+          - "--exclude=ansible"
+          - "--exclude=.gitignore"
+
+    - name: Deploy and build Docker Compose project
+      community.docker.docker_compose_v2:
+        project_src: /home/ubuntu/TODO-APP
+        state: present
