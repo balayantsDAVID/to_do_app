@@ -1,0 +1,52 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    networks:
+      - frontend-network
+    ports:
+      - 80:80
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    networks:
+      - backend-network
+      - frontend-network
+      - db-network
+    ports:
+      - 3000:3000
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=supersecret
+      - DB_NAME=tododb
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=supersecret
+      - POSTGRES_DB=tododb
+    networks:
+      - backend-network
+      - db-network
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 5432:5432
+
+networks:
+  backend-network:
+  frontend-network:
+  db-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
